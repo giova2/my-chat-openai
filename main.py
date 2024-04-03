@@ -22,8 +22,8 @@ class UserData(BaseModel):
   age: int
 
 @app.get("/")
-def root():
-  return "Hello human!"
+async def root():
+  return {"message": "Welcome to this fantastic app human!"}
 
 @app.post("/greet")
 async def create_hello_message(user_data: UserData):
