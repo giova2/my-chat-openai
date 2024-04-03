@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
+from lib.authorization import authorize_user
 
 load_dotenv()
 OPENAI_API_KEY = os.environ.get('OPENAI_API_TOKEN')
@@ -14,11 +15,15 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI()
 
+class Credentials(BaseModel):
+  name: str
+  password: str
+
 class UserData(BaseModel):
   """
-  Insert Name and Age
+  Insert credentials and Age
   """
-  name: str
+  credentials: Credentials
   age: int
 
 @app.get("/")
@@ -27,6 +32,8 @@ async def root():
 
 @app.post("/greet")
 async def create_hello_message(user_data: UserData):
+  if not authorize_user(user_data.credentials.name, user_data.credentials.password):
+    return {"message": "not authorized!"}
   """
   Create a welcoming message
   """
@@ -38,7 +45,7 @@ async def create_hello_message(user_data: UserData):
   be asertive and concise
 
   USER_DATA
-  Name: {user_data.name}
+  Name: {user_data.credentials.name}
   Age: {user_data.age}
 
   Respond with a JSON using this structure
